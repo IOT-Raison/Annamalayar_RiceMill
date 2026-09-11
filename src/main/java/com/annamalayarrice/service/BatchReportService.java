@@ -95,12 +95,104 @@ public class BatchReportService {
         // 5. COMPLETE BATCH REPORT
         // =====================================================
 
-        return new BatchReportDto(
-                paddyProduction,
-                thombai,
-                dryer,
-                huller
-        );
+// =====================================================
+// 5. BATCH SUMMARY
+// =====================================================
+
+// Batch ID
+Integer batchId = paddyId;
+
+// Batch Name
+String batchName = huller.getMaterial();
+
+// Batch start = earliest process start
+LocalDateTime batchStartTime =
+        paddyProduction.getStartTime();
+
+if (thombai.getStartTime().isBefore(batchStartTime)) {
+    batchStartTime = thombai.getStartTime();
+}
+
+if (dryer.getStartTime().isBefore(batchStartTime)) {
+    batchStartTime = dryer.getStartTime();
+}
+
+if (huller.getStartDateTime().isBefore(batchStartTime)) {
+    batchStartTime = huller.getStartDateTime();
+}
+
+
+// Batch end = latest process end
+LocalDateTime batchEndTime =
+        paddyProduction.getEndTime();
+
+if (thombai.getEndTime().isAfter(batchEndTime)) {
+    batchEndTime = thombai.getEndTime();
+}
+
+if (dryer.getEndTime().isAfter(batchEndTime)) {
+    batchEndTime = dryer.getEndTime();
+}
+
+if (huller.getEndDateTime().isAfter(batchEndTime)) {
+    batchEndTime = huller.getEndDateTime();
+}
+
+
+// Total process time
+long totalProcessTimeMinutes =
+        java.time.Duration.between(
+                batchStartTime,
+                batchEndTime
+        ).toMinutes();
+
+
+// =====================================================
+// HULLER OUTPUT SUMMARY
+// =====================================================
+
+Float paddyWeight = huller.getPaddy();
+Float riceOut = huller.getRice();
+Float broken = huller.getBroken();
+Float loss = huller.getLoss();
+
+Float ricePercent = huller.getRicePercent();
+Float brokenPercent = huller.getBrokenPercent();
+Float lossPercent = huller.getLossPercent();
+
+Float totalEnergy = huller.getKwh();
+
+
+// =====================================================
+// RETURN COMPLETE REPORT
+// =====================================================
+
+return new BatchReportDto(
+
+        batchId,
+        batchName,
+
+        batchStartTime,
+        batchEndTime,
+
+        totalProcessTimeMinutes,
+
+        paddyWeight,
+        riceOut,
+        broken,
+        loss,
+
+        ricePercent,
+        brokenPercent,
+        lossPercent,
+
+        totalEnergy,
+
+        paddyProduction,
+        thombai,
+        dryer,
+        huller
+);
     }
 
 

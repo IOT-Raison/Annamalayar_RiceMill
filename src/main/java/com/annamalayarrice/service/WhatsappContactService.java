@@ -36,8 +36,7 @@ public class WhatsappContactService {
         }
 
 
-        WhatsappContact contact =
-                new WhatsappContact();
+        WhatsappContact contact = new WhatsappContact();
 
         contact.setName(name);
         contact.setPhoneNumber(number);
