@@ -19,5 +19,8 @@ public interface BatchNotificationRepository
     @Modifying
     @Query("DELETE FROM BatchNotification b WHERE b.sentTime < :cutoffTime")
     int deleteOlderThan(LocalDateTime cutoffTime);
+
+
+    
 }
 

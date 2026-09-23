@@ -5,6 +5,7 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 import java.time.LocalDateTime;
+import java.util.List;
 
 @Data
 @NoArgsConstructor
@@ -26,4 +27,10 @@ public class HullerReportDto {
     private Float brokenPercent;
     private Float loss;
     private Float lossPercent;
+
+        // =====================================================
+    // HULLER AMS 1-MINUTE GRAPH
+    // =====================================================
+
+    private List<HullerAmsGraphDto> amsGraph;
 }

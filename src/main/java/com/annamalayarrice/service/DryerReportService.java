@@ -670,45 +670,60 @@ public class DryerReportService {
     // ADD ACTIVE STEP
     // =====================================================
 
-    private void addStep(
-            List<DryerStepDto> steps,
-            Integer stepNo,
-            Integer temperature,
-            Integer minutes,
-            Integer hours,
-            Integer blowerHz,
-            Integer rollerHz
-    ) {
+private void addStep(
+        List<DryerStepDto> steps,
+        Integer stepNo,
+        Integer temperature,
+        Integer minutes,
+        Integer hours,
+        Integer blowerHz,
+        Integer rollerHz
+) {
 
-        /*
-         * A step is considered active when at least one
-         * configuration value contains a value.
-         */
-
-        boolean active =
-                isActive(temperature)
-                        || isActive(minutes)
-                        || isActive(hours)
-                        || isActive(blowerHz)
-                        || isActive(rollerHz);
-
-
-        if (!active) {
-            return;
-        }
+    /*
+     * A step is considered active when at least one
+     * configuration value contains a value.
+     */
+    boolean active =
+            isActive(temperature)
+                    || isActive(minutes)
+                    || isActive(hours)
+                    || isActive(blowerHz)
+                    || isActive(rollerHz);
 
 
-        steps.add(
-                new DryerStepDto(
-                        stepNo,
-                        temperature,
-                        minutes,
-                        hours,
-                        blowerHz,
-                        rollerHz
-                )
-        );
+    if (!active) {
+        return;
     }
+
+
+    // =====================================================
+    // CONVERT Hz
+    // Database value / 100
+    // =====================================================
+
+    Integer blowerHzValue =
+            blowerHz != null
+                    ? blowerHz / 100
+                    : null;
+
+    Integer rollerHzValue =
+            rollerHz != null
+                    ? rollerHz / 100
+                    : null;
+
+
+    steps.add(
+            new DryerStepDto(
+                    stepNo,
+                    temperature,
+                    minutes,
+                    hours,
+                    blowerHzValue,
+                    rollerHzValue
+            )
+    );
+}
 
 
     private boolean isActive(Integer value) {

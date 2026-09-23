@@ -1,7 +1,9 @@
 package com.annamalayarrice.service;
 
+import com.annamalayarrice.dto.HullerAmsGraphDto;
 import com.annamalayarrice.dto.HullerReportDto;
 import com.annamalayarrice.entity.Huller;
+import com.annamalayarrice.repository.AddressLogRepository;
 import com.annamalayarrice.repository.HullerRepository;
 
 import org.springframework.stereotype.Service;
@@ -14,9 +16,11 @@ import java.util.List;
 public class HullerReportService {
 
     private final HullerRepository hullerRepository;
+    private final AddressLogRepository addressLogRepository;
 
-    public HullerReportService(HullerRepository hullerRepository) {
+    public HullerReportService(HullerRepository hullerRepository, AddressLogRepository addressLogRepository) {
         this.hullerRepository = hullerRepository;
+        this.addressLogRepository = addressLogRepository;
     }
 
 public HullerReportDto getHullerReport(
@@ -226,6 +230,40 @@ String normalizedBin =
                 (lossKg / paddyKg) * 100.0f;
     }
 
+List<Object[]> amsResults =
+        addressLogRepository.findOneMinuteAmsAverage(
+                startRecord.getDatetimeField(),
+                completedRecord.getDatetimeField()
+        );
+
+List<HullerAmsGraphDto> amsGraph =
+        amsResults.stream()
+                .map(row -> new HullerAmsGraphDto(
+                        ((java.sql.Timestamp) row[0])
+                                .toLocalDateTime(),
+
+                        row[1] != null
+                                ? ((Number) row[1]).floatValue()
+                                : null,
+
+                        row[2] != null
+                                ? ((Number) row[2]).floatValue()
+                                : null,
+
+                        row[3] != null
+                                ? ((Number) row[3]).floatValue()
+                                : null,
+
+                        row[4] != null
+                                ? ((Number) row[4]).floatValue()
+                                : null,
+
+                        row[5] != null
+                                ? ((Number) row[5]).floatValue()
+                                : null
+                ))
+                .toList();
+
 
     // =====================================================
     // RETURN HULLER REPORT
@@ -255,7 +293,8 @@ String normalizedBin =
 
             lossKg,
 
-            lossPercent
+            lossPercent,
+            amsGraph
     );
 }
 

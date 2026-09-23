@@ -23,6 +23,9 @@ public class WhatsappService {
     @Value("${twilio.template.sid}")
     private String templateSid;
 
+    @Value("${twilio.template.pf-alert.sid}")
+    private String pfAlertTemplateSid;
+
 
     public WhatsappService(
             WhatsappContactRepository contactRepository) {
@@ -324,4 +327,218 @@ public class WhatsappService {
                 value
         );
     }
+
+ public boolean sendPfLowAlert(
+        Float pf,
+        long durationMinutes) {
+
+    List<WhatsappContact> contacts =
+            contactRepository.findByActiveTrue();
+
+    if (contacts == null || contacts.isEmpty()) {
+
+        System.out.println(
+                "NO CONTACT TO SEND PF ALERT: "
+                        + "WHATSAPP_CONTACT table has no active contacts."
+        );
+
+        return false;
+    }
+
+    boolean atLeastOneSent = false;
+
+    // =====================================================
+    // IMPORTANT:
+    // KEEP THE ACTUAL PF VALUE INCLUDING MINUS SIGN
+    // =====================================================
+
+    String pfValue =
+            pf != null
+                    ? String.format("%.2f", pf)
+                    : "N/A";
+
+
+    for (WhatsappContact contact : contacts) {
+
+        if (contact.getPhoneNumber() == null ||
+                contact.getPhoneNumber().trim().isEmpty()) {
+
+            System.out.println(
+                    "NO CONTACT NUMBER: Contact ID = "
+                            + contact.getId()
+            );
+
+            continue;
+        }
+
+        try {
+
+            // =================================================
+            // TEMPLATE VARIABLES
+            // =================================================
+
+            Map<String, Object> variables =
+                    new HashMap<>();
+
+
+            // {{1}} = PF
+            variables.put(
+                    "1",
+                    pfValue
+            );
+
+
+            // {{2}} = duration
+            variables.put(
+                    "2",
+                    String.valueOf(durationMinutes)
+            );
+
+
+            String contentVariables =
+                    new Gson().toJson(variables);
+
+
+            // =================================================
+            // DEBUG
+            // =================================================
+
+            System.out.println(
+                    "=============================================="
+            );
+
+            System.out.println(
+                    "PF WHATSAPP ALERT"
+            );
+
+            System.out.println(
+                    "TO       : "
+                            + contact.getPhoneNumber()
+            );
+
+            System.out.println(
+                    "PF ACTUAL: "
+                            + pf
+            );
+
+            System.out.println(
+                    "PF VALUE : "
+                            + pfValue
+            );
+
+            System.out.println(
+                    "DURATION : "
+                            + durationMinutes
+                            + " minutes"
+            );
+
+            System.out.println(
+                    "VARIABLES: "
+                            + contentVariables
+            );
+
+
+            // =================================================
+            // SEND TWILIO WHATSAPP
+            // =================================================
+
+            Message message =
+                    Message.creator(
+
+                            new PhoneNumber(
+                                    "whatsapp:"
+                                            + contact
+                                            .getPhoneNumber()
+                                            .trim()
+                            ),
+
+                            new PhoneNumber(
+                                    whatsappFrom
+                            ),
+
+                            (String) null
+
+                    )
+                    .setContentSid(
+                            pfAlertTemplateSid
+                    )
+                    .setContentVariables(
+                            contentVariables
+                    )
+                    .create();
+
+
+            // =================================================
+            // CHECK RESPONSE
+            // =================================================
+
+            if (message == null ||
+                    message.getSid() == null) {
+
+                System.err.println(
+                        "PF MESSAGE NOT REACHED: "
+                                + "Twilio returned no Message SID."
+                );
+
+                continue;
+            }
+
+
+            System.out.println(
+                    "PF WHATSAPP ACCEPTED"
+            );
+
+            System.out.println(
+                    "TO: "
+                            + contact.getPhoneNumber()
+            );
+
+            System.out.println(
+                    "MESSAGE SID: "
+                            + message.getSid()
+            );
+
+            System.out.println(
+                    "TWILIO STATUS: "
+                            + message.getStatus()
+            );
+
+
+            atLeastOneSent = true;
+
+
+        } catch (Exception e) {
+
+            System.err.println(
+                    "PF WHATSAPP SEND FAILED"
+            );
+
+            System.err.println(
+                    "TO: "
+                            + contact.getPhoneNumber()
+            );
+
+            System.err.println(
+                    "REASON: "
+                            + e.getMessage()
+            );
+
+            e.printStackTrace();
+        }
+    }
+
+
+    if (!atLeastOneSent) {
+
+        System.out.println(
+                "PF MESSAGE NOT SENT TO ANY CONTACT"
+        );
+
+        return false;
+    }
+
+
+    return true;
+}
+
 }
