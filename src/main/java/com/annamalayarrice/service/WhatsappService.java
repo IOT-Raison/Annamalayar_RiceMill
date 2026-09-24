@@ -330,6 +330,7 @@ public class WhatsappService {
 
  public boolean sendPfLowAlert(
         Float pf,
+        Float kw,
         long durationMinutes) {
 
     List<WhatsappContact> contacts =
@@ -352,10 +353,15 @@ public class WhatsappService {
     // KEEP THE ACTUAL PF VALUE INCLUDING MINUS SIGN
     // =====================================================
 
-    String pfValue =
-            pf != null
+        String pfValue =
+                pf != null
                     ? String.format("%.2f", pf)
                     : "N/A";
+
+        String kwValue =
+                kw != null
+                ? String.format("%.2f", kw)
+                : "N/A";
 
 
     for (WhatsappContact contact : contacts) {
@@ -377,65 +383,30 @@ public class WhatsappService {
             // TEMPLATE VARIABLES
             // =================================================
 
-            Map<String, Object> variables =
-                    new HashMap<>();
+Map<String, Object> variables = new HashMap<>();
+
+// {{1}} = PF
+variables.put("1", pfValue);
+
+// {{2}} = KW
+variables.put("2", kwValue);
+
+// {{3}} = duration
+variables.put("3", String.valueOf(durationMinutes));
+
+String contentVariables =
+        new Gson().toJson(variables);
 
 
-            // {{1}} = PF
-            variables.put(
-                    "1",
-                    pfValue
-            );
-
-
-            // {{2}} = duration
-            variables.put(
-                    "2",
-                    String.valueOf(durationMinutes)
-            );
-
-
-            String contentVariables =
-                    new Gson().toJson(variables);
-
-
-            // =================================================
-            // DEBUG
-            // =================================================
-
-            System.out.println(
-                    "=============================================="
-            );
-
-            System.out.println(
-                    "PF WHATSAPP ALERT"
-            );
-
-            System.out.println(
-                    "TO       : "
-                            + contact.getPhoneNumber()
-            );
-
-            System.out.println(
-                    "PF ACTUAL: "
-                            + pf
-            );
-
-            System.out.println(
-                    "PF VALUE : "
-                            + pfValue
-            );
-
-            System.out.println(
-                    "DURATION : "
-                            + durationMinutes
-                            + " minutes"
-            );
-
-            System.out.println(
-                    "VARIABLES: "
-                            + contentVariables
-            );
+ System.out.println("PF ACTUAL: " + pf);
+System.out.println("PF VALUE : " + pfValue);
+System.out.println("KW VALUE : " + kwValue);
+System.out.println(
+        "DURATION : " + durationMinutes + " minutes"
+);
+System.out.println(
+        "VARIABLES: " + contentVariables
+);
 
 
             // =================================================

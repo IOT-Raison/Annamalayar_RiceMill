@@ -71,6 +71,11 @@ public class PfMonitoringService {
 Float pf =
         latest.getPowerHousePf();
 
+Float kw =
+        latest.getPowerHouseKw() != null
+                ? latest.getPowerHouseKw() / 1000.0f
+                : null;
+
 LocalDateTime logTime =
         latest.getLogTime();
 
@@ -210,6 +215,7 @@ if (pf == null || logTime == null) {
                     boolean sent =
                             whatsappService.sendPfLowAlert(
                                     pf,
+                                    kw,
                                     durationMinutes
                             );
 
